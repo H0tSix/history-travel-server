@@ -1,56 +1,49 @@
 const express = require("express");
-const axios = require("axios");
-const jwt = require("jsonwebtoken");
-require("dotenv").config();
+const passport = require("passport");
+const supabase = require("../utils/supabase");
 
-const router = express.Router();
+const router = express.Router(); 
 
-// ✅ 카카오 로그인 요청
-router.get("/", (req, res) => {
-    const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${process.env.KAKAO_CLIENT_ID}&redirect_uri=${process.env.KAKAO_REDIRECT_URI}&response_type=code`;
-    res.redirect(kakaoAuthUrl);
-});
+router.get("/kakao", passport.authenticate("kakao"));
 
-// ✅ 카카오 콜백 (로그인 후 리디렉트)
-router.get("/callback", async (req, res) => {
-    const { code } = req.query;
-
+router.get("/kakao/callback", passport.authenticate("kakao", { failureRedirect: "/" }), async (req, res) => {
     try {
-        // 1️⃣ 액세스 토큰 요청
-        const tokenResponse = await axios.post(
-            "https://kauth.kakao.com/oauth/token",
-            new URLSearchParams({
-                grant_type: "authorization_code",
-                client_id: process.env.KAKAO_CLIENT_ID,
-                redirect_uri: process.env.KAKAO_REDIRECT_URI,
-                client_secret: process.env.KAKAO_CLIENT_SECRET,
-                code,
-            }),
-            { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-        );
+        console.log("🔹 카카오 로그인 콜백 실행됨");
 
-        const { access_token } = tokenResponse.data;
+        const { id, kakao_account } = req.user;
+        console.log("🔹 카카오에서 받은 유저 정보:", { id, kakao_account });
 
-        // 2️⃣ 사용자 정보 가져오기
-        const userResponse = await axios.get("https://kapi.kakao.com/v2/user/me", {
-            headers: { Authorization: `Bearer ${access_token}` },
-        });
+        const email = kakao_account?.email || null;
+        const nickname = kakao_account?.profile?.nickname || "Unknown";
+        const provider = "kakao";
 
-        const { id, properties, kakao_account } = userResponse.data;
-        const user = {
-            id,
-            nickname: properties?.nickname,
-            email: kakao_account?.email,
-        };
+        console.log("🔹 Supabase에 저장 시도");
 
-        // 3️⃣ JWT 토큰 생성
-        const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "1h" });
+        const { data, error } = await supabase
+            .from("USER")
+            .upsert([
+                {
+                    id: Number(id),  
+                    uId: nickname,   
+                    email: email,
+                    provider: provider,
+                    password: null,
+                    created_at: new Date().toISOString(),
+                },
+            ], { onConflict: ["id"] });
 
-        res.json({ message: "카카오 로그인 성공", user, token });
-    } catch (error) {
-        console.error("카카오 로그인 실패:", error);
-        res.status(500).json({ message: "카카오 로그인 실패", error: error.response?.data });
+        if (error) {
+            console.error("❌ Supabase 저장 오류:", error);
+            return res.status(500).send("Supabase 저장 실패");
+        }
+
+        console.log("✅ Supabase 저장 성공:", data);
+        res.json({ message: "카카오 로그인 성공", data });
+
+    } catch (err) {
+        console.error("❌ 카카오 로그인 처리 중 오류:", err);
+        res.status(500).send("카카오 로그인 실패");
     }
 });
 
-module.exports = router;
+module.exports = router;  
