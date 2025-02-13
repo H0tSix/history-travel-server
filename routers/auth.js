@@ -11,3 +11,5 @@ router.post('/login', isNotLoggedIn, login);
 router.get('/logout', isLoggedIn, logout);
 
 // 카카오톡 라우터
+
+module.exports = router;
