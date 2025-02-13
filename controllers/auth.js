@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken');
 const supabase = require("../config/supabase");
 
 exports.join = async(req, res, next) => {
@@ -18,8 +19,11 @@ exports.join = async(req, res, next) => {
 exports.login = async (req, res, next) => {
     const { uId, password } = req.body;
     try {
-        const {data:user, error} = await supabase.from('user').select('*').eq("uId", uId).single();
-        if (error || !user) {
+        const {data:user, error} = await supabase.from('USER').select('*').eq("uId", uId).single();
+        if (error) {
+            return res.status(400).json({ error });
+        }
+        if (!user) {
             return res.status(400).json({ error: "사용자가 존재하지 않습니다." });
         }
         const match = await bcrypt.compare(password, user.password);
@@ -35,7 +39,6 @@ exports.login = async (req, res, next) => {
 }
 
 exports.logout = (req, res) => {
-    req.logout(() => {
-        res.redirect('/')
-    })
+    res.status(200).json({ message: "로그아웃 성공" });
+    //클라이언트측에서 토큰 삭제해야함
 }
