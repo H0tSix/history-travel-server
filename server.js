@@ -4,15 +4,17 @@ const express = require("express");
 const cors = require("cors");
 
 const authRouter = require("./routers/auth");
+const feedRouter = require("./routers/feed");
 
 const app = express();
 const port = 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(cors()); 
+app.use(cors());
 
-app.use('/auth', authRouter);
+app.use("/auth", authRouter);
+app.use("/feed", feedRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
