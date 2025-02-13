@@ -9,5 +9,5 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 module.exports = supabase;
 
-console.log("Supabase URL:", supabaseUrl);
-console.log("Supabase Key:", supabaseKey ? "✅ 키 로드 성공" : "❌ 키 로드 실패");
+//console.log("Supabase URL:", supabaseUrl);
+//console.log("Supabase Key:", supabaseKey ? "✅ 키 로드 성공" : "❌ 키 로드 실패");
