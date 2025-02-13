@@ -5,6 +5,7 @@ const cors = require("cors");
 
 const authRouter = require("./routers/auth");
 const starRouter = require("./routers/star")
+const peedRouter = require("./routers/peed")
 
 const app = express();
 const port = 3000;
@@ -15,6 +16,7 @@ app.use(cors());
 
 app.use('/auth', authRouter);
 app.use('/star', starRouter);
+app.use('/peed', peedRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
