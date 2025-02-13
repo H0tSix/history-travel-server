@@ -6,9 +6,9 @@ exports.join = async(req, res, next) => {
 
     try{
         const hashPassword = await bcrypt.hash(password, 10);
-        const { data, error } = await supabase.from('user').insert({ uId, email, hashPassword, provider });
+        const { data, error } = await supabase.from('USER').insert({ uId, email, password: hashPassword, provider });
         if (error) throw error;
-        res.status(201).json({ message: "회원가입 성공", data });
+        res.status(201).json({ message: "회원가입 성공" });
     }catch(error){
         console.error(error);
         res.status(500).json({ error: error.message });
