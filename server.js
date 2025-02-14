@@ -2,13 +2,14 @@ const express = require("express");
 const cors = require("cors"); // CORS 미들웨어 추가
 const session = require("express-session");
 const passport = require("passport");
+const axios = require("axios")
 require("./passport/kakaoStrategy"); // 카카오 인증 전략 불러오기
 
 const authRouter = require("./routers/auth");
 const starRouter = require("./routers/star");
-const peedRouter = require("./routers/peed");
 const authKakaoRouter = require("./routers/auth_kakao"); // 카카오 로그인 라우터 가져오기
 const feedRouter = require("./routers/feed"); // feedRouter 추가
+const llmRouter = require("./routers/llm")
 
 const app = express();
 
@@ -38,8 +39,8 @@ app.use(passport.session());
 app.use("/auth", authKakaoRouter);
 app.use("/auth", authRouter);
 app.use("/star", starRouter);
-app.use("/peed", peedRouter);
-app.use("/feed", feedRouter); // /feed 경로에 대해 feedRouter를 연결
+app.use("/feed", feedRouter);
+app.use("/llm", llmRouter);
 
 app.listen(3000, () => {
   console.log("✅ Server running on http://localhost:3000");

@@ -1,12 +1,10 @@
 const express = require('express');
 
 const { isLoggedIn, isNotLoggedIn } = require('../middlewares');
-const {  } = require('../controllers/peed');
+const { createAvata } = require('../controllers/llm');
 
 const router = express.Router();
 
-// 피드저장
-router.post('/', isNotLoggedIn, );
-router.get('/', isLoggedIn, );
+router.post("/createSI", isLoggedIn, createAvata);
 
 module.exports = router;
