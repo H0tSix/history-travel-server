@@ -1,3 +1,4 @@
+const cors = require("cors");
 const express = require("express");
 const session = require("express-session");
 const passport = require("passport");
@@ -21,6 +22,7 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(cors());
 
 // ✅ 카카오 로그인 라우터 등록
 app.use("/auth", authKakaoRouter);
