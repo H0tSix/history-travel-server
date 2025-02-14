@@ -28,8 +28,9 @@ app.use("/auth", authKakaoRouter);
 app.use("/auth", authRouter);
 app.use("/star", starRouter);
 app.use("/peed", peedRouter);
-app.use(cors());
 app.use("/feed", feedRouter);
+
+app.use(cors());
 
 app.listen(3000, () => {
   console.log("✅ Server running on http://localhost:3000");
