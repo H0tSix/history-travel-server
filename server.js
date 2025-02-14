@@ -1,6 +1,7 @@
 const express = require("express");
 const session = require("express-session");
 const passport = require("passport");
+const cors = require("cors"); // CORS 미들웨어 추가
 require("./passport/kakaoStrategy"); // 카카오 인증 전략 불러오기
 
 const authRouter = require("./routers/auth");
@@ -11,6 +12,11 @@ const feedRouter = require("./routers/feed");
 
 const app = express();
 
+app.use(cors({
+  origin: '*',  // 모든 도메인 허용
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(

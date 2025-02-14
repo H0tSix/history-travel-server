@@ -18,6 +18,17 @@ exports.createFeed = async (req, res) => {
     }
 }
 
+exports.getFeeds = async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('FEED').select('*');
+        if (error) throw error;
+        res.status(200).json({ message: "모든 피드 정보 조회 성공", data });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.getFeed = async (req, res) => {
     // const uId = req.user.userId;
     const sId = req.params.id;
