@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors"); // CORS 미들웨어 추가
 const session = require("express-session");
+const fetch = require('node-fetch'); 
 const passport = require("passport");
 const axios = require("axios")
 require("./passport/kakaoStrategy"); // 카카오 인증 전략 불러오기
@@ -30,6 +31,17 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.get('/proxy', async (req, res) => {
+  try {
+    const response = await fetch(req.query.imgPath);  // 쿼리 파라미터로 이미지 경로 전달
+    const data = await response.buffer();  // 이미지 데이터를 버퍼로 받기
+    res.set('Content-Type', 'image/jpeg');  // 반환할 데이터 타입 설정
+    res.send(data);  // 이미지 전송
+  } catch (error) {
+    res.status(500).send('이미지 요청 실패');
+  }
+});
 
 // 카카오 로그인 라우터 등록
 app.use("/auth", authKakaoRouter);
