@@ -28,10 +28,18 @@ exports.getFeed = async (req, res) => {
 
 exports.addComment = async (req, res) => {
   const { coment, uId, fId, sId } = req.body;
-  const fcId = Date.now;
+  const fcId = Date.now();
   if (!coment || !uId || !fId || !sId) {
     return res.status(400).json({ error: "필수 데이터 누락" });
   }
+  console.log("🛠️ Supabase에 댓글 저장 시도:", {
+    fcId,
+    fId,
+    uId,
+    sId,
+    coment,
+    parent_id: null,
+  });
 
   const { data, error } = await supabase
     .from("FEEDCOMMENT")
@@ -40,8 +48,11 @@ exports.addComment = async (req, res) => {
     .single();
 
   if (error) {
-    console.error("댓글 저장 오류:", error.message);
-    return res.status(500).json({ error: "댓글 저장 실패" });
+    if (error) {
+      console.error("❌ 댓글 저장 오류:", error || "No error message");
+      console.error("❌ Supabase 에러 상세:", JSON.stringify(error, null, 2));
+      return res.status(500).json({ error: error.message || "댓글 저장 실패" });
+    }
   }
 
   console.log("사용자 댓글 저장 완료:", data);
