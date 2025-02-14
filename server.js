@@ -1,27 +1,27 @@
-require("dotenv").config();
-
 const express = require("express");
-const cors = require("cors");
+const session = require("express-session");
+const passport = require("passport");
+require("./passport/kakaoStrategy"); // 카카오 인증 전략 불러오기
 
 const authRouter = require("./routers/auth");
 const starRouter = require("./routers/star")
 const peedRouter = require("./routers/peed")
+const authKakaoRouter = require("./routers/auth_kakao"); // ✅ 카카오 로그인 라우터 가져오기
 
 const app = express();
-const port = 3000;
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(session({ secret: process.env.JWT_SECRET, resave: false, saveUninitialized: false }));
+app.use(passport.initialize());
+app.use(passport.session());
 
-app.use(cors()); 
-
+// ✅ 카카오 로그인 라우터 등록
+app.use("/auth", authKakaoRouter);
 app.use('/auth', authRouter);
 app.use('/star', starRouter);
 app.use('/peed', peedRouter);
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
-
-app.listen(port, () => {
-  console.log(`app listening on port ${port}`);
+app.listen(3000, () => {
+    console.log("✅ Server running on http://localhost:3000");
 });
