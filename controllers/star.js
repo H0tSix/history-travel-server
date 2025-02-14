@@ -16,20 +16,6 @@ exports.createStar = async (req, res) => {
     }
 }
 
-exports.createStarImage = async (req, res) => {
-    const uId = req.user.userId;
-    try{
-        const { star_name, profile_image } = req.body;
-        const { data, error } = await supabase.from('STAR').update({ profile_image }).eq('uId', uId)
-        .eq('star_name', star_name).single();
-        if (error) throw error;
-        res.status(201).json({ message: "위인 이미지 url 등록 성공" });
-    }catch(error) {
-        console.error(error);
-        res.status(500).json({ error: error.message });
-    }
-}
-
 exports.getStars = async (req, res) => {
     try {
         const { data, error } = await supabase.from('STAR').select('*');

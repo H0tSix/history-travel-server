@@ -13,8 +13,6 @@ router.post('/createStar', isLoggedIn, createStar);
 router.get('/getStars', isLoggedIn, getStars);
 // 특정 사용자가 추가한 위인 정보 조회
 router.get('/getStarsByUser', isLoggedIn, getStarsByUser);
-// 위인 이미지 추가
-router.post('/createStarImage', isLoggedIn, createStarImage);
 // 위인 스토리지에 이미지추가 + 스타 테이블에 이미지 추가
 router.post("/createStorage", upload.single("file"), isLoggedIn, createStorage);
 router.get("/getStorage", isLoggedIn, getStorage);
