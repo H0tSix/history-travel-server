@@ -3,28 +3,29 @@ const axios = require("axios");
 const router = express.Router();
 const cors = require("cors");
 
-// 🔹 두 개의 Together API 키를 환경 변수에서 가져옴
+// 🔹 API 키 로드
 const { BF_API_KEY, ACHIEVEMENT_API_KEY, GROQ_API_KEY } = process.env;
 const TOGETHER_BASE_URL = "https://api.together.xyz";
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const IMAGE_MODEL_TOGETHER = "black-forest-labs/FLUX.1-schnell-Free";
 const TEXT_MODEL = "mixtral-8x7b-32768";
+const PROMPT_MODEL = "llama-3-8b"; // 프롬프트 최적화용 모델
 
-// 요청 간 대기 시간 (10초로 변경)
+// 요청 간 대기 시간 (15초)
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // 🔥 캐싱을 위한 저장소 (중복 요청 방지)
 const cache = new Map();
 
-// 📢 "Rate Limit" 에러 발생 시 재시도 로직 (최대 2회, 10초 대기)
+// 📢 "Rate Limit" 에러 발생 시 재시도 로직 (최대 2회, 15초 대기)
 async function callAIWithRetry({ url, model, textForImage, apiKey }, retries = 2) {
   for (let attempt = 0; attempt < retries; attempt++) {
     try {
       return await callAI({ url, model, textForImage, apiKey });
     } catch (error) {
       if (error.message.includes("rate limit") && attempt < retries - 1) {
-        console.warn("🚨 Rate limit 초과! 10초 후 재시도...");
-        await delay(10000); // 10초 대기 후 재시도
+        console.warn("🚨 Rate limit 초과! 15초 후 재시도...");
+        await delay(15000);
       } else {
         throw error;
       }
@@ -71,20 +72,30 @@ router.post("/", async (req, res) => {
       return res.json(cache.get(text));
     }
 
-    // ✅ 2️⃣ 위인의 얼굴 이미지 생성 (프로필) → `BF_API_KEY` 사용
+    // ✅ 2️⃣ 위인의 얼굴 이미지 프롬프트 생성
+    console.log("📝 프로필 이미지 프롬프트 생성...");
+    const facePrompt = await callAI({
+      url: GROQ_URL,
+      apiKey: GROQ_API_KEY,
+      model: PROMPT_MODEL,
+      textForImage: `${text}의 얼굴을 사실적이고 역사적으로 정확한 인물 초상화 스타일로 AI 이미지 생성하는 영어 프롬프트를 200자로 작성해줘.`,
+    }).then((res) => res.choices[0].message.content);
+
+    console.log("✅ 프로필 이미지 프롬프트 생성 완료:", facePrompt);
+
     console.log("🖼️ 프로필 이미지 생성 요청...");
     const faceImageData = await callAIWithRetry({
       url: `${TOGETHER_BASE_URL}/v1/images/generations`,
-      apiKey: BF_API_KEY, // 🔥 프로필 이미지는 BF_API_KEY 사용
+      apiKey: BF_API_KEY,
       model: IMAGE_MODEL_TOGETHER,
-      textForImage: `${text}의 얼굴을 사실적인 인물 초상화 스타일로 생성해줘.`,
+      textForImage: facePrompt,
     });
 
     const profileImageUrl = faceImageData.data?.[0]?.url || "default-face.png";
     console.log("✅ 프로필 이미지 생성 완료:", profileImageUrl);
 
-    console.log("⏳ 10초 대기 중...");
-    await delay(10000); // 🔥 요청 간격 10초 유지
+    console.log("⏳ 15초 대기 중...");
+    await delay(15000);
 
     // ✅ 3️⃣ 위인의 대표 업적 3개 추출
     console.log("📢 업적 정보 요청 중...");
@@ -101,16 +112,25 @@ router.post("/", async (req, res) => {
 
     console.log("✅ 업적 정보 추출 완료:", achievementPrompts);
 
-    // ✅ 4️⃣ 업적별 AI 이미지 생성 요청 (각 요청 사이에 10초 대기) → `ACHIEVEMENT_API_KEY` 사용
     const imageUrls = [];
     for (let i = 0; i < achievementPrompts.length; i++) {
-      console.log(`🖼️ ${i + 1}번째 업적 이미지 생성 요청 중...`);
+      console.log(`📝 ${i + 1}번째 업적 이미지 프롬프트 생성...`);
 
+      const achievementImagePrompt = await callAI({
+        url: GROQ_URL,
+        apiKey: GROQ_API_KEY,
+        model: PROMPT_MODEL,
+        textForImage: `${achievementPrompts[i]}에 대한 AI 이미지 생성을 위한 200자 이내의 최적화된 영어 프롬프트를 작성해줘.`,
+      }).then((res) => res.choices[0].message.content);
+
+      console.log(`✅ ${i + 1}번째 업적 이미지 프롬프트 생성 완료:`, achievementImagePrompt);
+
+      console.log(`🖼️ ${i + 1}번째 업적 이미지 생성 요청...`);
       const imageData = await callAIWithRetry({
         url: `${TOGETHER_BASE_URL}/v1/images/generations`,
-        apiKey: ACHIEVEMENT_API_KEY, // 🔥 업적 이미지는 ACHIEVEMENT_API_KEY 사용
+        apiKey: ACHIEVEMENT_API_KEY,
         model: IMAGE_MODEL_TOGETHER,
-        textForImage: achievementPrompts[i],
+        textForImage: achievementImagePrompt,
       });
 
       const aiImageUrl = imageData.data?.[0]?.url || "default-image.png";
@@ -119,8 +139,8 @@ router.post("/", async (req, res) => {
       console.log(`✅ ${i + 1}번째 업적 이미지 생성 완료: ${aiImageUrl}`);
 
       if (i < achievementPrompts.length - 1) {
-        console.log("⏳ 10초 대기 중...");
-        await delay(10000);
+        console.log("⏳ 15초 대기 중...");
+        await delay(15000);
       }
     }
 
