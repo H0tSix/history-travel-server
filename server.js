@@ -3,7 +3,6 @@ const cors = require("cors"); // CORS 미들웨어 추가
 const session = require("express-session");
 const passport = require("passport");
 const axios = require("axios")
-const cors = require("cors"); // CORS 미들웨어 추가
 require("./passport/kakaoStrategy"); // 카카오 인증 전략 불러오기
 
 const authRouter = require("./routers/auth");
