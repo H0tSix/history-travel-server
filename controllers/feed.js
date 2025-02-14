@@ -25,3 +25,24 @@ exports.getFeed = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.addComment = async (req, res) => {
+  const { coment, uId, fId, sId } = req.body;
+  const fcId = Date.now;
+  if (!coment || !uId || !fId || !sId) {
+    return res.status(400).json({ error: "필수 데이터 누락" });
+  }
+
+  const { data, error } = await supabase
+    .from("FEEDCOMMENT")
+    .insert([{ fcId, fId, uId, sId, coment, parent_id: null }])
+    .select("*")
+    .single();
+
+  if (error) {
+    console.error("댓글 저장 오류:", error.message);
+    return res.status(500).json({ error: "댓글 저장 실패" });
+  }
+
+  console.log("사용자 댓글 저장 완료:", data);
+};
