@@ -6,7 +6,8 @@ require("./passport/kakaoStrategy"); // 카카오 인증 전략 불러오기
 const authRouter = require("./routers/auth");
 const starRouter = require("./routers/star");
 const authKakaoRouter = require("./routers/auth_kakao"); // ✅ 카카오 로그인 라우터 가져오기
-const feedRouter = require("./routers/feed_coment");
+const feedComentRouter = require("./routers/feed_coment");
+const feedRouter = require("./routers/feed");
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use(passport.session());
 app.use("/auth", authKakaoRouter);
 app.use("/auth", authRouter);
 app.use("/star", starRouter);
+app.use("/feed_coment", feedComentRouter);
 app.use("/feed", feedRouter);
 
 app.listen(3000, () => {
