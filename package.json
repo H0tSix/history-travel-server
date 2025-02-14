@@ -9,7 +9,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "@supabase/supabase-js": "^2.48.1",
     "axios": "^1.7.9",
@@ -24,5 +23,14 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.9"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/H0tSix/history-travel-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/H0tSix/history-travel-server/issues"
+  },
+  "homepage": "https://github.com/H0tSix/history-travel-server#readme",
+  "description": ""
 }
