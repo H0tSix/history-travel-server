@@ -10,21 +10,21 @@ const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const IMAGE_MODEL_TOGETHER = "black-forest-labs/FLUX.1-schnell-Free";
 const TEXT_MODEL = "mixtral-8x7b-32768";
 
-// 요청 간 대기 시간 (60초로 증가)
+// 요청 간 대기 시간 (10초로 변경)
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // 🔥 캐싱을 위한 저장소 (중복 요청 방지)
 const cache = new Map();
 
-// 📢 "Rate Limit" 에러 발생 시 재시도 로직 (최대 2회, 60초 대기)
+// 📢 "Rate Limit" 에러 발생 시 재시도 로직 (최대 2회, 10초 대기)
 async function callAIWithRetry({ url, model, textForImage, apiKey }, retries = 2) {
   for (let attempt = 0; attempt < retries; attempt++) {
     try {
       return await callAI({ url, model, textForImage, apiKey });
     } catch (error) {
       if (error.message.includes("rate limit") && attempt < retries - 1) {
-        console.warn("🚨 Rate limit 초과! 60초 후 재시도...");
-        await delay(60000); // 60초 대기 후 재시도
+        console.warn("🚨 Rate limit 초과! 10초 후 재시도...");
+        await delay(10000); // 10초 대기 후 재시도
       } else {
         throw error;
       }
@@ -83,8 +83,8 @@ router.post("/", async (req, res) => {
     const profileImageUrl = faceImageData.data?.[0]?.url || "default-face.png";
     console.log("✅ 프로필 이미지 생성 완료:", profileImageUrl);
 
-    console.log("⏳ 60초 대기 중...");
-    await delay(60000); // 🔥 요청 간격 60초 유지
+    console.log("⏳ 10초 대기 중...");
+    await delay(10000); // 🔥 요청 간격 10초 유지
 
     // ✅ 3️⃣ 위인의 대표 업적 3개 추출
     console.log("📢 업적 정보 요청 중...");
@@ -101,7 +101,7 @@ router.post("/", async (req, res) => {
 
     console.log("✅ 업적 정보 추출 완료:", achievementPrompts);
 
-    // ✅ 4️⃣ 업적별 AI 이미지 생성 요청 (각 요청 사이에 60초 대기) → `ACHIEVEMENT_API_KEY` 사용
+    // ✅ 4️⃣ 업적별 AI 이미지 생성 요청 (각 요청 사이에 10초 대기) → `ACHIEVEMENT_API_KEY` 사용
     const imageUrls = [];
     for (let i = 0; i < achievementPrompts.length; i++) {
       console.log(`🖼️ ${i + 1}번째 업적 이미지 생성 요청 중...`);
@@ -119,8 +119,8 @@ router.post("/", async (req, res) => {
       console.log(`✅ ${i + 1}번째 업적 이미지 생성 완료: ${aiImageUrl}`);
 
       if (i < achievementPrompts.length - 1) {
-        console.log("⏳ 60초 대기 중...");
-        await delay(60000);
+        console.log("⏳ 10초 대기 중...");
+        await delay(10000);
       }
     }
 
