@@ -1,12 +1,3 @@
-//수파노바-에스파
-const { createClient } = require("@supabase/supabase-js");
-
-// ✅ Supabase 연결 🔹 API 키
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-
 const express = require("express");
 const axios = require("axios");
 
@@ -40,30 +31,6 @@ async function callAIWithRetry({ url, model, textForImage, apiKey }, retries = 2
   }
 }
 
-// ✅ 최신 스타 이름을 Supabase에서 가져오는 함수
-async function getLatestStarName() {
-  try {
-    const { data, error } = await supabase
-    .from("STAR")  // ✅ 테이블명 정확히 지정
-    .select("star_name")
-    .order("sId", { ascending: false })  // ✅ `sld` 기준 최신 데이터 가져오기
-    .limit(1)
-    .single();
-
-
-    if (error || !data) {
-      throw new Error("Supabase에서 스타 데이터를 가져올 수 없음");
-    }
-
-    console.log("✅ 최신 스타 이름:", data.star_name);
-    return data.star_name;
-  } catch (error) {
-    console.error("❌ Supabase에서 데이터 가져오기 실패:", error);
-    return "이순신";  // ✅ 실패 시 기본값 반환
-  }
-}
-
-
 // 공통적인 AI API 호출 함수
 async function callAI({ url, model, textForImage, apiKey }) {
   try {
@@ -89,17 +56,11 @@ async function callAI({ url, model, textForImage, apiKey }) {
 // 📌 AI 이미지 생성 및 업적 정보 요청
 exports.createAvata = async (req, res) => {
   try {
-    let { text } = req.body; // 🔹 사용자 입력값 받아오기
+    const { text } = req.body;
 
-    console.log("📢 LLM API 호출됨! 받은 텍스트:", text); // 디버깅 로그
-
-    // ✅ Supabase에서 최신 스타 이름 가져오기 (입력값이 없을 경우 자동으로 가져옴)
     if (!text || typeof text !== "string") {
-      console.log("📢 Supabase에서 최신 스타 가져오는 중...");
-      text = await getLatestStarName();
+      return res.status(400).json({ error: "유효한 위인 이름을 입력하세요." });
     }
-
-    console.log(`✅ LLM 요청 대상 스타: ${text}`);
 
     // ✅ 1️⃣ 캐시에 데이터가 있으면 API 호출 없이 반환
     if (cache.has(text)) {
