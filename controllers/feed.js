@@ -32,8 +32,23 @@ exports.createFeed = async (req, res) => {
 exports.getFeeds = async (req, res) => {
     try {
         const { data, error } = await supabase.from('FEED').select('*');
+        const { data:files } = await supabase.storage.from(bucketName).list(folderName);
+        const feedImageFiles = files.filter(file => {
+            const fileName = file.name;
+            const fileParts = fileName.split('_');
+            return fileParts[1] === "feed-image.png";
+        });
+        const feedImageUrls = feedImageFiles.map(file => {
+            return `${process.env.SUPABASE_URL}/storage/v1/object/public/${bucketName}/${folderName}/${file.name}`;
+        });
+        const feedsWithImages = data.map((feed, index) => {
+            return {
+                ...feed,
+                imageUrl: feedImageUrls[index] || "default-image.png"  // 이미지가 없으면 기본 이미지 사용
+            };
+        });
         if (error) throw error;
-        res.status(200).json({ message: "모든 피드 정보 조회 성공", data });
+        res.status(200).json({ message: "모든 피드 정보 조회 성공", data:feedsWithImages });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: error.message });
