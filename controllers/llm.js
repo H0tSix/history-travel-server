@@ -58,9 +58,15 @@ exports.createAvata = async (req, res) => {
   try {
     const { text } = req.body;
 
+    console.log(`📢 백엔드에서 받은 데이터: ${text}`); // ✅ 디버깅 로그 추가
+
     if (!text || typeof text !== "string") {
+      console.error("❌ 잘못된 데이터 수신: text 값이 올바르지 않음");
       return res.status(400).json({ error: "유효한 위인 이름을 입력하세요." });
     }
+
+    text = text.trim(); // ✅ 입력값 공백 제거
+    console.log(`📢 최종 처리할 위인 이름: ${text}`); // ✅ 정제된 데이터 확인
 
     // ✅ 1️⃣ 캐시에 데이터가 있으면 API 호출 없이 반환
     if (cache.has(text)) {
