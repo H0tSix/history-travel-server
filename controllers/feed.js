@@ -1,17 +1,28 @@
 const supabase = require("../config/supabase");
 
+const folderName = "uploads";
+const bucketName = "my-bucket";
+
 exports.createFeed = async (req, res) => {
     const uId = req.user.userId;
     try{
-        const { feed_text, feed_image, sId } = req.body;
-        const { data: starData, error: starError } = await supabase.from('STAR').select('sId').eq('sId', sId).single();
-
-        if (starError || !starData) {
-            return res.status(400).json({ error: "해당 sId가 STAR 테이블에 존재하지 않습니다." });
-        }
-        const { data, error } = await supabase.from('FEED').insert({ feed_text, feed_image, sId });
-        if (error) throw error;
-        res.status(201).json({ message: "피드 정보 등록 성공" });
+        if (!req.file) {
+            return res.status(400).json({ error: "파일이 제공되지 않았습니다." });
+          }
+          const { originalname, buffer, mimetype } = req.file;
+          const filePath = `${folderName}/${Date.now()}_${originalname}`;
+          const path = `${Date.now()}_${originalname}`;
+      
+          const { data, error } = await supabase.storage.from(bucketName).upload(filePath, buffer, { contentType: mimetype });
+  
+          const { feed_text, sId } = req.body;
+          await supabase.from('FEED').insert({feed_text, sId, feed_image:path });
+      
+          if (error) throw error;
+      
+          const { publicURL } = supabase.storage.from(bucketName).getPublicUrl(filePath);
+      
+          return res.status(201).json({ message: "피드 정보 등록, 파일 업로드 성공", url: publicURL });
     }catch(error){
         console.error(error);
         res.status(500).json({ error: error.message });

@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require("multer");
 
 const { isLoggedIn, isNotLoggedIn } = require('../middlewares');
-const { createStar, getStars, getStarsByUser, createStarImage, createStorage, getStorage } = require('../controllers/star');
+const { createStar, getStars, getStarsByUser, createStorage, getStorage } = require('../controllers/star');
 
 const upload = multer({ storage: multer.memoryStorage() });
 const router = express.Router();

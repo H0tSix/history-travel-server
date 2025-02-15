@@ -53,12 +53,12 @@ exports.createStorage = async (req, res) => {
 
         const { star_name } = req.body;
         await supabase.from('STAR').update({ profile_image:path }).eq('uId', uId).eq('star_name', star_name).single();
-    
+        const { data:data2 } = await supabase.from('STAR').select('sId').eq('star_name', star_name).single();
         if (error) throw error;
     
         const { publicURL } = supabase.storage.from(bucketName).getPublicUrl(filePath);
     
-        return res.status(201).json({ message: "파일 업로드 성공", url: publicURL });
+        return res.status(201).json({ message: "파일 업로드 성공", url: publicURL, sId: data2.sId });
     } catch (error) {
         console.error("파일 업로드 실패:", error.message);
         return res.status(500).json({ error: error.message });
