@@ -3,6 +3,7 @@ const { randomUUID } = require("crypto");
 
 exports.getFeed = async (req, res) => {
   const { id } = req.query;
+  const SUPABASE_URL = process.env.SUPABASE_URL;
   try {
     const { data: feed, error } = await supabase
       .from("FEED")
@@ -19,6 +20,14 @@ exports.getFeed = async (req, res) => {
 
     if (error) throw error;
     if (!feed) return res.status(404).json({ message: "게시물이 없습니다." });
+
+    feed.feed_image = feed.feed_image
+      ? `${SUPABASE_URL}/storage/v1/object/public/my-bucket/uploads/${feed.feed_image}`
+      : null;
+
+    feed.STAR.profile_image = feed.STAR.profile_image
+      ? `${SUPABASE_URL}/storage/v1/object/public/my-bucket/uploads/${feed.STAR.profile_image}`
+      : null;
 
     res.status(200).json(feed);
   } catch (error) {
@@ -104,7 +113,7 @@ exports.addCommetChat = async (req, res) => {
   try {
     const aiPrompt = `너는 오랜 역사를 가진 ${star}라는 인물이야. 
     지금 그 시대에 상황에 맞게 "${comment}" 라는 댓글이 달렸을 때, 
-    그 시대적 상황을 고려하여 재치있게 30자 내외로 한글로 답글을 작성해줘. 
+    그 시대적 상황을 고려하여 재치있게 30자 내외로 한글로만 답글을 작성해줘. 
     반드시 JSON 형식으로 응답해. 예제: {"response": "여기에 AI의 답글이 들어감"}`;
 
     const response = await callAI({
