@@ -1,3 +1,4 @@
+const cors = require("cors");
 const express = require("express");
 const cors = require("cors"); // CORS 미들웨어 추가
 const session = require("express-session");
@@ -31,6 +32,7 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(cors());
 
 app.get('/proxy', async (req, res) => {
   try {
