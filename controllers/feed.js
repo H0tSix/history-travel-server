@@ -17,12 +17,12 @@ exports.createFeed = async (req, res) => {
   
           const { feed_text, sId } = req.body;
           await supabase.from('FEED').insert({feed_text, sId, feed_image:path });
-      
+          const { data: data2 } = await supabase.from('FEED').select('fId').eq('feed_text', feed_text).eq('sId', sId).eq('feed_image', path);
           if (error) throw error;
       
           const { publicURL } = supabase.storage.from(bucketName).getPublicUrl(filePath);
       
-          return res.status(201).json({ message: "피드 정보 등록, 파일 업로드 성공", url: publicURL });
+          return res.status(201).json({ message: "피드 정보 등록, 파일 업로드 성공", url: publicURL, fId: data2 });
     }catch(error){
         console.error(error);
         res.status(500).json({ error: error.message });
