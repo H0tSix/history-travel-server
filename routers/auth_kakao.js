@@ -1,6 +1,6 @@
 const express = require("express");
 const passport = require("passport");
-const supabase = require("../utils/supabase");
+const supabase = require("../config/supabase");
 
 const router = express.Router(); 
 
