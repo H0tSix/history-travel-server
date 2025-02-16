@@ -98,7 +98,7 @@ exports.createAvata = async (req, res) => {
     console.log("📢 업적 정보 요청 중...");
     const achievementResponse = await axios.post(GROQ_URL, {
       model: TEXT_MODEL,
-      messages: [{ role: "user", content: `${text}가 이룬 대표적인 업적 3가지를 JSON 배열 ["업적1", "업적2", "업적3"] 형식으로 반환해줘.` }],
+      messages: [{ role: "user", content: `${text}가 이룬 대표적인 업적 3가지를 JSON 배열 ["업적1", "업적2", "업적3"] 형식으로, 언어는 한국어로 반환해줘.` }],
       response_format: { type: "json_object" },
     }, {
       headers: {
