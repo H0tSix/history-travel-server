@@ -2,7 +2,7 @@ const supabase = require("../config/supabase");
 const { randomUUID } = require("crypto");
 
 exports.getFeed = async (req, res) => {
-  const { id } = req.query;
+  const { id } = req.params;
   const SUPABASE_URL = process.env.SUPABASE_URL;
   try {
     const { data: feed, error } = await supabase
