@@ -57,9 +57,9 @@ exports.getFeeds = async (req, res) => {
 
 exports.getFeed = async (req, res) => {
     // const uId = req.user.userId;
-    const sId = req.params.id;
+    const fId = req.params.id;
     try {
-        const { data, error } = await supabase.from('FEED').select('*').eq('sId', sId);
+        const { data, error } = await supabase.from('FEED').select('*').eq('fId', fId);
         if (error) throw error;
         res.status(200).json({ message: "피드 정보 조회 성공", data });
     } catch (error) {
